@@ -191,9 +191,7 @@ rm -rf ./package/ssr/luci-app-ssr-plus
 
 
 mv -f ./package/add/up/tool/smartdns/luci-app-smartdns ./feeds/luci/applications/luci-app-smartdns
-
-mv -f ./package/add/up/tool/netspeedtest/*  ./package/add/
-mv -f ./package/add/up/tool/smartdns/*  ./package/add/
+mv -f ./package/add/up/tool/smartdns/smartdns  ./feeds/packages/net/smartdns 
 
 #rm -rf ./package/ssr/brook
 #rm -rf ./package/ssr/chinadns-ng
