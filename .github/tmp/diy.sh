@@ -50,6 +50,7 @@ rm -rf  ./feeds/luci/applications/luci-app-arpbind
 rm -rf  ./feeds/packages/net/oaf
 #rm -rf  ./feeds/packages/net/wget
 
+rm -rf  ./feeds/packages/net/speedtest-cli
 # rm -rf  ./feeds/packages/rust
 # rm -rf  ./feeds/packages/lang/rust
 
