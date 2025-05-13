@@ -728,14 +728,4 @@ sed -i 's/max_requests 3/max_requests 20/g' package/network/services/uhttpd/file
 ./scripts/feeds update -i
 ./scripts/feeds install -i
 
-#cat  ../.config  > .config
-cat  ./x86_64/${CONFIG_S}  > .config
-case "${CONFIG_S}" in
-Vip*)
-cat  ./x86_64/comm  >> .config
-;;
-*)
-echo 'no'
-;;
-esac
 exit
