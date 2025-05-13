@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# private gitea
 gitea=git.cooluc.com
 github="github.com"
+auth="sirpdboy/openwrt"
 mirror=https://init.cooluc.com
 mirror=raw.githubusercontent.com/coolsnowwolf/lede/master
+ezapi=https://api.github.com/repositories/256094735/releases
 
 #安装和更新软件包
 UPDATE_PACKAGE() {
@@ -189,10 +190,6 @@ rm -rf ./package/ssr/luci-app-ssr-plus
 # rm -rf ./package/ssr/luci-app-passwall
 # rm -rf ./package/ssr/luci-app-passwall2
 
-
-mv -f ./package/add/up/tool/smartdns/luci-app-smartdns ./feeds/luci/applications/luci-app-smartdns
-mv -f ./package/add/up/tool/smartdns/smartdns  ./feeds/packages/net/smartdns 
-
 #rm -rf ./package/ssr/brook
 #rm -rf ./package/ssr/chinadns-ng
 #rm -rf ./package/ssr/dns2socks
@@ -284,6 +281,9 @@ rm -rf ./package/js2
 rm -rf ./package/emortal/autocore ./package/emortal/automount  ./package/emortal/autosamba  ./package/emortal/default-settings 
 rm -rf ./package/lean/autocore ./package/lean/automount  ./package/lean/autosamba  ./package/lean/default-settings 
 # rm -rf ./package/emortal2/autocore 
+#istoreos-files
+rm -rf ./package/diy
+rm -rf ./package/istoreos-files
 
 cat  patch/banner > ./package/base-files/files/etc/banner
 cat  patch/profile > ./package/base-files/files/etc/profile
@@ -301,6 +301,7 @@ rm -rf ./feeds/packages/net/ddns-go
 rm -rf  ./feeds/luci/applications/luci-app-ddns-go
 git clone https://github.com/sirpdboy/luci-app-ddns-go ./package/ddns-go
 
+git clone https://github.com/sirpdboy/netspeedtest ./package/netspeedtest
 # nlbwmon
 # sed -i 's/524288/16777216/g' feeds/packages/net/nlbwmon/files/nlbwmon.config
 # 可以设置汉字名字
@@ -321,9 +322,14 @@ sed -i 's/luci-lib-ipkg/luci-base/g' package/istore/luci/luci-app-store/Makefile
 # git clone https://github.com/sbwml/v2ray-geodata package/v2ray-geodata
 # git clone https://github.com/sbwml/v2ray-geodata feeds/packages/net/v2ray-geodata
 
-# TTYD设置
-sed -i 's/procd_set_param stdout 1/procd_set_param stdout 0/g' ./feeds/packages/utils/ttyd/files/ttyd.init
-sed -i 's/procd_set_param stderr 1/procd_set_param stderr 0/g' ./feeds/packages/utils/ttyd/files/ttyd.init
+# luci-compat - fix translation
+sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
+sed -i 's/<%:Down%>/<%:Move down%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
+# TTYD
+sed -i 's/services/system/g' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
+sed -i '3 a\\t\t"order": 50,' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
+sed -i 's/procd_set_param stdout 1/procd_set_param stdout 0/g' feeds/packages/utils/ttyd/files/ttyd.init
+sed -i 's/procd_set_param stderr 1/procd_set_param stderr 0/g' feeds/packages/utils/ttyd/files/ttyd.init
 sed -i 's|/bin/login|/bin/login -f root|' ./feeds/packages/utils/ttyd/files/ttyd.config
 
 
@@ -342,8 +348,10 @@ sed -i 's/家庭云//g'  `grep "家庭云" -rl ./`
 
 sed -i 's/msgstr "挂载 SMB 网络共享"/msgstr "挂载网络共享"/g'  `grep "挂载 SMB 网络共享" -rl ./`
 
-sed -i '/filter_/d' ./package/network/services/dnsmasq/files/dhcp.conf   #DHCP禁用IPV6问题
-
+# 网易云
+rm -rf ./feeds/luci/applications/luci-app-unblockmusic
+git clone https://github.com/UnblockNeteaseMusic/luci-app-unblockneteasemusic.git  ./package/luci-app-unblockneteasemusic
+sed -i 's/解除网易云音乐播放限制/解锁灰色歌曲/g' ./package/luci-app-unblockneteasemusic/luasrc/controller/unblockneteasemusic.lua
 #cifs挂pan
 # sed -i '/mcsub_renew.datatype/d'  ./feeds/luci/applications/luci-app-udpxy/luasrc/model/cbi/udpxy.lua  #修复UDPXY设置延时55的错误
 
@@ -390,6 +398,15 @@ sed -i 's/START=95/START=99/' `find package/ -follow -type f -path */ddns-script
 git clone https://github.com/shenlijun/openwrt-x550-nbase-t package/openwrt-x550-nbase-t
 
 
+# luci
+pushd feeds/luci
+    # curl -s https://git.kejizero.online/zhao/files/raw/branch/main/patch/luci/0001-luci-mod-status-firewall-disable-legacy-firewall-rul.patch | patch -p1
+    curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/luci/0001-luci-mod-system-add-modal-overlay-dialog-to-reboot.patch | patch -p1  #reboot
+    # curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/luci/0002-luci-mod-status-firewall-disable-legacy-firewall-rul2410.patch | patch -p1   #nftable2410
+    # curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/luci/0003-luci-mod-status-storage-index-applicable-only-to-val.patch | patch -p1  #storeage
+    # curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/luci/0003-luci-mod-status-storage-index-applicable-only-to-val-storage2305.patch | patch -p1  #storeage2305lean
+    # curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/luci/0004-luci-luci-app-upnp-ipurl-upnp2305.patch | patch -p1  #upnp2305lean
+popd
 # luci-app-filemanager
 rm -rf feeds/luci/applications/luci-app-filemanager
 git clone https://$github/sbwml/luci-app-filemanager package/new/luci-app-filemanager
@@ -413,6 +430,7 @@ VER1="$(grep "KERNEL_PATCHVER:="  ./target/linux/rockchip/Makefile | cut -d = -f
 CLASH="arm64"
 fi
 if [[ $DATE_S == 'default' ]]; then
+   # DATA=`TZ=UTC-8 date +%Y%m%d%H%M -d +"12"hour`
    DATA=`TZ=UTC-8 date +%y%m%d%H%M`
    # DATA=`TZ=UTC-8 date +%y%m%d%H%M`
 else 
@@ -447,19 +465,28 @@ elif [ "$VER1" = "6.12" ]; then
 date2="EzOpWrt ${CONFIG_S}-${DATA}-${VER1}.${ver612}_by Sirpdboy"
 date1="${CONFIG_S}-${DATA}-${VER1}.${ver612}"
 fi
-echo "${date1}" > ./package/base-files/files/etc/ezopenwrt_version
-echo "${date2}" >> ./package/base-files/files/etc/banner
-echo '---------------------------------' >> ./package/base-files/files/etc/banner
+echo "EZVER=${date1}" > ./files/etc/ezopenwrt_version
+echo "EZDATE=$DATA" >> ./files/etc/ezopenwrt_version
+cat ./files/etc/ezopenwrt_version >  $GITHUB_WORKSPACE/ezopenwrt_version
+echo EZAPI="$ezapi" >>  $GITHUB_WORKSPACE/ezopenwrt_version
+echo "${date2}" >> ./files/etc/banner
+#tokenfile
+cp -r  ./package/add/patch/GithubvToken ./files/etc/ezgithub
+chmod 600 ./files/etc/ezgithub
+echo '---------------------------------' >> ./files/etc/banner
 [ -f ./files/root/.zshrc ] || mv -f ./package/add/patch/z.zshrc ./files/root/.zshrc
 [ -f ./files/root/.zshrc ] || curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/z.zshrc > ./files/root/.zshrc
 [ -f ./files/etc/profiles ] || mv -f ./package/add/patch/profiles ./files/etc/profiles
 [ -f ./files/etc/profiles ] || curl -fsSL  https://raw.githubusercontent.com/loso3000/other/master/patch/profiles > ./files/etc/profiles
 
 if [ ${TARGET_DEVICE} = "x86_64" ] ; then
-cat>buildmd5.sh<<-\EOF
+cat>buildmd5.sh<<\EOF
 #!/bin/bash
 
-r_version=`cat ./package/base-files/files/etc/ezopenwrt_version`
+github="github.com"
+auth="sirpdboy/openwrt"
+. $GITHUB_WORKSPACE/ezopenwrt_version
+# gzip bin/targets/*/*/*.img | true
 # gzip bin/targets/*/*/*.img | true
 
 pushd bin/targets/*/*/
@@ -480,27 +507,82 @@ rm -rf  *kernel.bin
 # BINDIR=`pwd`
 sleep 2
 
-ip=` cat  package/base-files/files/bin/config_generate | grep "n) ipad" |awk -F '\"' '{print $2}'`
-echo ip:----------------- $ip
-mv  *generic-squashfs-combined.img.gz       EzOpWrt-${r_version}-${TARGET_DEVICE}-dev.img.gz   
-mv  *generic-squashfs-combined-efi.img.gz   EzOpWrt-${r_version}-${TARGET_DEVICE}-dev-efi.img.gz
-md5_EzOpWrt=EzOpWrt-${r_version}-${TARGET_DEVICE}-dev.img.gz   
-md5_EzOpWrt_uefi=EzOpWrt-${r_version}-${TARGET_DEVICE}-dev-efi.img.gz
+mv  *generic-squashfs-combined.img.gz       EzOpWrt-${EZVER}-${TARGET_DEVICE}-dev.img.gz   
+mv  *generic-squashfs-combined-efi.img.gz   EzOpWrt-${EZVER}-${TARGET_DEVICE}-dev-efi.img.gz
+md5_EzOpWrt=EzOpWrt-${EZVER}-${TARGET_DEVICE}-dev.img.gz   
+md5_EzOpWrt_uefi=EzOpWrt-${EZVER}-${TARGET_DEVICE}-dev-efi.img.gz
 
-ip=192.168.10.1
-#md5
-[ -f ${md5_EzOpWrt}] && md5sum ${md5_EzOpWrt} > EzOpWrt_dev.md5 &&echo "ip=$ip" >> EzOpWrt_dev.md5
+ip=` cat  package/base-files/files/bin/config_generate | grep "n) ipad" |awk -F '\"' '{print $2}'`
+[[ -n $ip ]] || ip=` cat package/base-files/luci2/bin/config_generate | grep "n) ipad" |awk -F '\"' '{print $2}'`
+[[ -n $ip ]] || ip="192.168.10.1"
+OTA_URL="https://$github/$auth/releases/download"
+
 [ -f ${md5_EzOpWrt_uefi} ] && md5sum ${md5_EzOpWrt_uefi} > EzOpWrt_dev-efi.md5 &&echo "ip=$ip" >> EzOpWrt_dev-efi.md5
+[ -f ${md5_EzOpWrt} ] && {
+
+file_size=`du -m  ${md5_EzOpWrt} | cut -f1`
+md5=`md5sum ${md5_EzOpWrt} | awk '{print $1}'`
+    printf '{
+    "%s": [
+    {
+        "ver": "%s",
+        "name": "%s",
+        "size": "%s",
+        "date": "%s",
+        "md5": "%s",
+        "ip": "%s",
+        "url": "%s/%s/%s"
+    }
+    ]
+}\n' \
+    "${TARGET_DEVICE}" \
+    "${EZVER}" \
+    "${md5_EzOpWrt}" \
+    "${file_size}" \
+    "${EZDATE}" \
+    "${md5}" \
+    "${ip}" \
+    "${OTA_URL}" "${EZVER}" "${md5_EzOpWrt}" > ezota.json
+}
+[ -f ${md5_EzOpWrt_uefi} ]  && {
+file_size=`du -m  ${md5_EzOpWrt_uefi} | cut -f1`
+md5=`md5sum ${md5_EzOpWrt_uefi} | awk '{print $1}'`
+    printf '{
+    "%s": [
+    {
+        "ver": "%s",
+        "name": "%s",
+        "size": "%s",
+        "date": "%s",
+        "md5": "%s",
+        "ip": "%s",
+        "url": "%s/%s/%s"
+    }
+    ]
+}\n' \
+    "${TARGET_DEVICE}" \
+    "${EZVER}" \
+    "${md5_EzOpWrt_uefi}" \
+    "${file_size}" \
+    "${EZDATE}" \
+    "${md5}" \
+    "${ip}" \
+    "${OTA_URL}" "${EZVER}" "${md5_EzOpWrt_uefi}" > ezota.json
+}
+if [ ${CONFIG_S} = "Vip-Super" ] ; then
 cp ../../../../ezotafooter  ./ota.footer
 cp ../../../../ezverlatest   ./ver.latest 
+fi
 popd
 
 EOF
 else
-cat>buildmd5.sh<<-\EOF
+cat>buildmd5.sh<<\EOF
 #!/bin/bash
 
-r_version=`cat ./package/base-files/files/etc/ezopenwrt_version`
+github="github.com"
+auth="sirpdboy/openwrt"
+. $GITHUB_WORKSPACE/ezopenwrt_version
 # gzip bin/targets/*/*/*.img | true
 
 VER1="$(grep "KERNEL_PATCHVER:=" ./target/linux/rockchip/Makefile | cut -d = -f 2)"
@@ -522,13 +604,16 @@ rm -rf  *kernel.bin
 # BINDIR=`pwd`
 sleep 2
 
+
+mv   *squashfs-sysupgrade.img.gz EzOpWrt-${EZVER}_${TARGET_DEVICE}-squashfs-sysupgrade.img.gz 
+mv  *ext4-sysupgrade.img.gz EzOpWrt-${EZVER}_${TARGET_DEVICE}-ext4-sysupgrade.img.gz
+md5_EzOpWrt=EzOpWrt-${EZVER}_${TARGET_DEVICE}-squashfs-sysupgrade.img.gz 
+md5_EzOpWrt_uefi=EzOpWrt-${EZVER}_${TARGET_DEVICE}-ext4-sysupgrade.img.gz
 ip=` cat  package/base-files/files/bin/config_generate | grep "n) ipad" |awk -F '\"' '{print $2}'`
-echo ip:----------------- $ip
-ip=192.168.10.1
-mv   *squashfs-sysupgrade.img.gz EzOpWrt-${r_version}_${TARGET_DEVICE}-squashfs-sysupgrade.img.gz 
-mv  *ext4-sysupgrade.img.gz EzOpWrt-${r_version}_${TARGET_DEVICE}-ext4-sysupgrade.img.gz
-md5_EzOpWrt=EzOpWrt-${r_version}_${TARGET_DEVICE}-squashfs-sysupgrade.img.gz 
-md5_EzOpWrt_uefi=EzOpWrt-${r_version}_${TARGET_DEVICE}-ext4-sysupgrade.img.gz
+[[ -n $ip ]] || ip=` cat package/base-files/luci2/bin/config_generate | grep "n) ipad" |awk -F '\"' '{print $2}'`
+[[ -n $ip ]] || ip="192.168.10.1"
+OTA_URL="https://$github/$auth/releases/download"
+
 [ -f ${md5_EzOpWrt} ] && md5sum ${md5_EzOpWrt} > EzOpWrt_dev.md5  &&echo "ip=$ip" >> EzOpWrt_dev.md5
 [ -f ${md5_EzOpWrt_uefi} ] && md5sum ${md5_EzOpWrt_uefi} > EzOpWrt_dev-efi.md5 &&echo "ip=$ip" >> EzOpWrt_dev-efi.md5
 cp ../../../../ezotafooter  ./ota.footer
@@ -537,58 +622,29 @@ popd
 exit 0
 EOF
 fi
-cat>bakkmod.sh<<-\EOF
+cat>bakkmod.sh<<\EOF
 #!/bin/bash
 kmoddirdrv=./files/etc/kmod.d/drv
 kmoddirdocker=./files/etc/kmod.d/docker
 bakkmodfile=./kmod.source
-cp -rf ./patch/list.txt $bakkmodfile
+cat ./package/add/patch/list.txt >$bakkmodfile  || true
+[ ! -f "$bakkmodfile" ] && cat ./patch/kmod.source >$bakkmodfile || true
 nowkmodfile=./files/etc/kmod.now
 mkdir -p $kmoddirdrv 2>/dev/null
 mkdir -p $kmoddirdocker 2>/dev/null
-while IFS= read -r line; do  
-    cp -v $(find bin/ -type f -name "*${line}*") $kmoddirdrv
-    echo "$line"  
-        a=`find ./bin/ -name "$line" `
-    echo $a
-    if [ -z "$a" ]; then
-        echo "no find: $line"
-    else
-        cp -f $a $kmoddirdrv
-	echo $line >> $nowkmodfile
-        if [ $? -eq 0 ]; then
-            echo "cp ok: $line"
-        else
-            echo "no cp:$line"
-        fi
+while IFS= read -r line || [[ -n "$line" ]]; do
+    found=$(find bin/ -type f -name  "${line}" | head -n 1)
+    if [ -z "$found" ]; then
+        echo "警告: 找不到模块 $line"
+        continue
     fi
+    cp -fv "$found" "$kmoddirdrv"
 done < "$bakkmodfile"
-    # find ./bin/ -name  $file | xargs -i cp -f {}  $kmoddirdrv
-    # cp -v $(find bin/targets/ -type f -name "*${FIRMWARE_TYPE}*") ../firmware
-find ./bin/ -name "*dockerman*" | xargs -i cp -f {} $kmoddirdocker
-find ./bin/ -name "*dockerd*" | xargs -i cp -f {} $kmoddirdocker
+find bin/ -type f \( -name "*dockerman*" -o -name "*dockerd*" \) -exec cp -fv {} "$kmoddirdocker" \;
 EOF
-case "${CONFIG_S}" in
-     "Vip"*)  
-#修改默认IP地址
-# sed -i 's/192.168.1.1/192.168.10.1/g' package/base-files/files/bin/config_generate
-#修改immortalwrt.lan关联IP
-#sed -i "s/192\.168\.[0-9]*\.[0-9]*/192.168.10.1/g" $(find ./feeds/luci/modules/luci-mod-system/ -type f -name "flash.js")
-#修改默认IP地址
-#sed -i "s/192\.168\.[0-9]*\.[0-9]*/192.168.10.1/g" package/base-files/files/bin/config_generate    #config_generate
 
-#修改默认IP地址
-sed -i 's/192\.168\.1\.1/192\.168\.10\.1/g' package/base-files/files/bin/config_generate
 
-#sed -i 's/192.168.100.1/192.168.10.1/g' package/istoreos-files/Makefile
-#sed -i 's/luci-theme-argon/luci-theme-kucat/g' package/istoreos-files/Makefile
-
-#修改immortalwrt.lan关联IP
-sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.10\.1/g" $(find ./feeds/luci/modules/luci-mod-system/ -type f -name "flash.js")
-#修改默认IP地址
-# sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.10\.1/g" package/base-files/files/bin/config_generate
-
-cat>./package/base-files/files/etc/kmodreg<<-\EOF
+cat>./package/base-files/files/etc/kmodreg<<\EOF
 #!/bin/bash
 # EzOpWrt By Sirpdboy
 IPK=$1
@@ -616,19 +672,21 @@ else
     sed -i '/option check_signature/d' "$opkg_conf"
 	opkg update
 	echo "正在安装Docker及相关服务...请耐心等待...大约需要1-5分钟 "
-	opkg install $nowkmoddir/dockerd*.ipk --force-depends >/dev/null 2>&1
-	opkg install $nowkmoddir/luci-app-dockerman*.ipk --force-depends  >/dev/null 2>&1
-	opkg install $nowkmoddir/luci-i18n-dockerman*.ipk --force-depends  >/dev/null 2>&1
-    	opkg install avahi-daemon >/dev/null 2>&1
+	# opkg install $nowkmoddir/dockerd*.ipk --force-depends >/dev/null 2>&1
+	# opkg install $nowkmoddir/luci-app-dockerman*.ipk --force-depends  >/dev/null 2>&1
+	# opkg install $nowkmoddir/luci-i18n-dockerman*.ipk --force-depends  >/dev/null 2>&1
+	opkg install --force-depends luci-app-dockerman >/dev/null 2>&1
+    	opkg install --force-depends luci-i18n-dockerman-zh-cn	 >/dev/null 2>&1
+    	opkg install --force-depends avahi-daemon >/dev/null 2>&1
 	if is_docker; then
 		echo "本地成功安装Docker及相关服务！"
 	else
    		echo "本地安装失败！"
    		echo "在线重新安装Docker及相关服务...请耐心等待...大约需要1-5分钟"
-   		opkg install dockerd --force-depends >/dev/null 2>&1
-    		opkg install luci-app-dockerman >/dev/null 2>&1
-    		opkg install luci-i18n-dockerman* >/dev/null 2>&1
-    		opkg install avahi-daemon >/dev/null 2>&1
+   		opkg install --force-depends dockerd >/dev/null 2>&1
+    		opkg install --force-depends luci-i18n-dockerman* >/dev/null 2>&1
+    		opkg install --force-depends luci-app-dockerman >/dev/null 2>&1
+    		opkg install --force-depends avahi-daemon >/dev/null 2>&1
     		if is_docker; then 
     		    echo "在线成功安装Docker及相关服务！" 
     		fi
@@ -638,6 +696,7 @@ fi
 if is_docker; then
       		echo "设置Docker服务自动启动成功！"
       		echo "Docker菜单注销重新登陆才能看到！"
+      		echo "[注意]请用分区扩容工具扩容挂载/opt/docker盘，否则无法正常使用！"
 		uci -q get dockerd.globals 2>/dev/null && {
 		uci -q set dockerd.globals.data_root='/opt/docker/'
 		uci -q set dockerd.globals.auto_start='1'
@@ -662,8 +721,34 @@ case "$IPK" in
 esac
 
 EOF
+
+
+#UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
+UPDATE_PACKAGE "nekoclash" "Thaolga/luci-app-nekoclash" "main"
+UPDATE_PACKAGE "luci-app-gecoosac" "lwb1978/openwrt-gecoosac" "main"
+UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
+UPDATE_PACKAGE "easytier" "lazyoop/networking-artifact" "main" "pkg"
+UPDATE_PACKAGE "vnt" "lazyoop/networking-artifact" "main" "pkg"
+
+case "${CONFIG_S}" in
+Vip-Super|Vip-Mini)
+
+#修改默认IP地址
+sed -i 's/192.168.1.1/192.168.10.1/g' package/base-files/files/bin/config_generate
+
+#修改默认IP地址
+# sed -i 's/192\.168\.1\.1/192\.168\.10\.1/g' package/base-files/files/bin/config_generate
+#修改默认IP地址
+# sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.10\.1/g" package/base-files/files/bin/config_generate
+
+#sed -i 's/192.168.100.1/192.168.10.1/g' package/istoreos-files/Makefile
+#sed -i 's/luci-theme-argon/luci-theme-kucat/g' package/istoreos-files/Makefile
+
+#修改immortalwrt.lan关联IP
+sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.10\.1/g" $(find ./feeds/luci/modules/luci-mod-system/ -type f -name "flash.js")
+
 ;;
-"Free"*) 
+*)
 
 #修改默认IP地址
 # sed -i 's/192.168.1.1/192.168.8.1/g' package/base-files/files/bin/config_generate
@@ -683,49 +768,9 @@ sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.8\.1/g" $(find ./feeds/luci/modules
 #修改默认IP地址
 sed -i "s/192\.168\.[0-9]*\.[0-9]*/192\.168\.8\.1/g" package/base-files/files/bin/config_generate
 
-cat>./package/base-files/files/etc/kmodreg<<-\EOF
-#!/bin/bash
-# EzOpWrt By Sirpdboy
-IPK=$1
-nowkmoddir=/etc/kmod.d/$IPK
-[ -d $nowkmoddir ]  || exit
-run_drv() {
-echo "目前此功能仅限VIP版本提供！ "
-exit
-}
-run_docker() {
-echo "目前此功能仅限VIP版本提供！ "
-exit
-}
-case "$IPK" in
-	"drv")
-		run_drv
-	;;
-	"docker")
-		run_docker
-	;;
-esac
-exit
-EOF
-
 ;;
 esac
 
-
-#UPDATE_PACKAGE "包名" "项目地址" "项目分支" "pkg/name，可选，pkg为从大杂烩中单独提取包名插件；name为重命名为包名"
-UPDATE_PACKAGE "nekoclash" "Thaolga/luci-app-nekoclash" "main"
-UPDATE_PACKAGE "luci-app-gecoosac" "lwb1978/openwrt-gecoosac" "main"
-UPDATE_PACKAGE "luci-app-tailscale" "asvow/luci-app-tailscale" "main"
-UPDATE_PACKAGE "easytier" "lazyoop/networking-artifact" "main" "pkg"
-UPDATE_PACKAGE "vnt" "lazyoop/networking-artifact" "main" "pkg"
-
-sed -i "s/^.*vermagic$/\techo '1' > \$(LINUX_DIR)\/.vermagic/" include/kernel-defaults.mk
-
-sed -i 's/option timeout 30/option timeout 60/g' package/system/rpcd/files/rpcd.config
-sed -i 's#20) \* 1000#60) \* 1000#g' feeds/luci/modules/luci-base/htdocs/luci-static/resources/rpc.js
-
-sed -i "s/tty\(0\|1\)::askfirst/tty\1::respawn/g" target/linux/*/base-files/etc/inittab
-sed -i 's/max_requests 3/max_requests 20/g' package/network/services/uhttpd/files/uhttpd.config
 
 ./scripts/feeds update -i
 ./scripts/feeds install -i
