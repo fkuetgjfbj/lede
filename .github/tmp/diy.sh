@@ -182,6 +182,7 @@ rm -rf ./package/add/up/tool/default-settings
 rm -rf ./package/add/up/tool/autosamba
 rm -rf ./package/add/up/tool/automount
 rm -rf ./package/add/up/theme/luci-theme-kucat
+
 # rm -rf ./package/ssr/luci-app-passwall2/htdocs/luci-static/resources/
 # rm -rf ./package/ssr/luci-app-homeproxy
 #bypass
@@ -268,8 +269,6 @@ rm -rf ./feeds/packages/net/shadow-tls
 # mv -f ./package/add/up/netdata ./package/
 rm -rf ./feeds/luci/applications/luci-app-socat  ./package/feeds/luci/luci-app-socat
 rm -rf ./package/add/up/pass/naiveproxy
-
-rm -rf ./package/add/up/tool/OpenAppFilter
 
 # rm -rf $(find ./package/ -type d -regex ".*\(autocore\|automount\|autosamba\|default-settings\).*")
 rm -rf ./package/js
