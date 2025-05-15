@@ -1,4 +1,5 @@
 #!/bin/bash
 cp -Rf ../lede/.github/tmp/* ./  || true
+cp -Rf ./.github/tmp/* ./  || true
 chmod +x diy2
 ./diy2
